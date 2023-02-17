@@ -13,8 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .modeling_base import PreTrainedModelWrapper, create_reference_model
-from .modeling_value_head import AutoModelForCausalLMWithValueHead, AutoModelForSeq2SeqLMWithValueHead
 
+# There is a circular import in the PPOTrainer if we let isort sort these
+# isort: off
+from .utils import AdaptiveKLController, FixedKLController
 
-SUPPORTED_ARCHITECTURES = (AutoModelForCausalLMWithValueHead, AutoModelForSeq2SeqLMWithValueHead)
+# isort: on
+
+from .base import BaseTrainer
+from .ppo_config import PPOConfig
+from .ppo_trainer import PPOTrainer
