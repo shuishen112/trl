@@ -1,122 +1,144 @@
-<div style="text-align: center">
-<img src="https://huggingface.co/datasets/trl-internal-testing/example-images/resolve/main/images/trl_banner_dark.png">
-</div>
-
-# TRL - Transformer Reinforcement Learning
-> Train transformer language models with reinforcement learning.
-
-
-## What is it?
-With `trl` you can train transformer language models with Proximal Policy Optimization (PPO). The library is built on top of the [`transformers`](https://github.com/huggingface/transformers) library by  🤗 Hugging Face. Therefore, pre-trained language models can be directly loaded via `transformers`. At this point most of decoder architectures and encoder-decoder architectures are supported. 
-
-**Highlights:**
-- `PPOTrainer`: A PPO trainer for language models that just needs (query, response, reward) triplets to optimise the language model.
-- `AutoModelForCausalLMWithValueHead` & `AutoModelForSeq2SeqLMWithValueHead`: A transformer model with an additional scalar output for each token which can be used as a value function in reinforcement learning.
-- Example: Train GPT2 to generate positive movie reviews with a BERT sentiment classifier.
-
-## How it works
-Fine-tuning a language model via PPO consists of roughly three steps:
-
-1. **Rollout**: The language model generates a response or continuation based on query which could be the start of a sentence.
-2. **Evaluation**: The query and response are evaluated with a function, model, human feedback or some combination of them. The important thing is that this process should yield a scalar value for each query/response pair.
-3. **Optimization**: This is the most complex part. In the optimisation step the query/response pairs are used to calculate the log-probabilities of the tokens in the sequences. This is done with the model that is trained and and a reference model, which is usually the pre-trained model before fine-tuning. The KL-divergence between the two outputs is used as an additional reward signal to make sure the generated responses don't deviate to far from the reference language model. The active language model is then trained with PPO.
-
-This process is illustrated in the sketch below:
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a name="readme-top"></a>
+<!--
+*** Thanks for checking out the Best-README-Template. If you have a suggestion
+*** that would make this better, please fork the repo and create a pull request
+*** or simply open an issue with the tag "enhancement".
+*** Don't forget to give the project a star!
+*** Thanks again! Now go create something AMAZING! :D
+-->
 
 
-<div style="text-align: center">
-<img src="https://huggingface.co/datasets/trl-internal-testing/example-images/resolve/main/images/trl_overview.png" width="800">
-<p style="text-align: center;"> <b>Figure:</b> Sketch of the workflow. </p>
-</div>
 
-## Installation
+<!-- PROJECT SHIELDS -->
+<!--
+*** I'm using markdown "reference style" links for readability.
+*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
+*** See the bottom of this document for the declaration of the reference variables
+*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
+*** https://www.markdownguide.org/basic-syntax/#reference-style-links
+-->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
 
-### Python package
-Install the library with pip:
-```bash
-pip install trl
-```
 
-### From source
-If you want to run the examples in the repository a few additional libraries are required. Clone the repository and install it with pip:
-```bash
-git clone https://github.com/lvwerra/trl.git
-cd trl/
-pip install .
-```
 
-If you wish to develop TRL, you should install in editable mode:
-```bash
-pip install -e .
-```
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-## How to use
 
-### Example
-This is a basic example on how to use the library. Based on a query the language model creates a response which is then evaluated. The evaluation could be a human in the loop or another model's output.
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-```python
-# imports
-import torch
-from transformers import AutoTokenizer
-from trl import PPOTrainer, PPOConfig, AutoModelForCausalLMWithValueHead, create_reference_model
-from trl.core import respond_to_batch
 
-# get models
-model = AutoModelForCausalLMWithValueHead.from_pretrained('gpt2')
-model_ref = create_reference_model(model)
+This is a pytorch implementation of the paper: QRGPT: A Query Reformulation Approach using GPT with
+Reinforcement Learning. We use the library Transformer Reinforcement Learning (trl) from https://github.com/lvwerra/trl.git. 
 
-tokenizer = AutoTokenizer.from_pretrained('gpt2')
 
-# initialize trainer
-ppo_config = PPOConfig(
-    batch_size=1,
-    forward_batch_size=1
-)
 
-# encode a query
-query_txt = "This morning I went to the "
-query_tensor = tokenizer.encode(query_txt, return_tensors="pt")
 
-# get model response
-response_tensor  = respond_to_batch(model_ref, query_tensor)
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-# create a ppo trainer
-ppo_trainer = PPOTrainer(ppo_config, model, model_ref, tokenizer)
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-# define a reward for response
-# (this could be any reward such as human feedback or output from another model)
-reward = [torch.tensor(1.0)]
+![image/RLHF_QRGPT.png](image/RLHF_QRGPT.png)
 
-# train model for one step with ppo
-train_stats = ppo_trainer.step([query_tensor[0]], [response_tensor[0]], reward)
-```
 
-### Advanced example: IMDB sentiment
-For a detailed example check out the example python script `examples/scripts/ppo-sentiment.py`, where GPT2 is fine-tuned to generate positive movie reviews. An few examples from the language models before and after optimisation are given below:
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<div style="text-align: center">
-<img src="https://huggingface.co/datasets/trl-internal-testing/example-images/resolve/main/images/table_imdb_preview.png" width="800">
-<p style="text-align: center;"> <b>Figure:</b> A few review continuations before and after optimisation. </p>
-</div>
 
-## References
 
-### Proximal Policy Optimisation
-The PPO implementation largely follows the structure introduced in the paper **"Fine-Tuning Language Models from Human Preferences"** by D. Ziegler et al. \[[paper](https://arxiv.org/pdf/1909.08593.pdf), [code](https://github.com/openai/lm-human-preferences)].
+## Built With
 
-### Language models
-The language models utilize the `transformers` library by 🤗 Hugging Face.
+[![made-with-pytorch](https://img.shields.io/badge/Made%20with-PyTorch-orange)](https://pytorch.org/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## Citation
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-```bibtex
-@misc{vonwerra2022trl,
-  author = {Leandro von Werra and Younes Belkada and Lewis Tunstall and Edward Beeching and Tristan Thrush and Nathan Lambert},
-  title = {TRL: Transformer Reinforcement Learning},
-  year = {2020},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/lvwerra/trl}}
-}
-```
+
+
+<!-- GETTING STARTED -->
+## Running Enviroment
+
+* pip:
+
+> conda create -n env_name python=3.8   
+  source activate env_name      
+  pip install -r requirements.txt
+
+* conda:
+
+> conda env create -f environment.yaml
+
+## Run
+
+> python QueryReformulation.py
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Query Analysis in the SCIFACT dataset:
+
+We show how the query influenced the performance of sparse retrieval (BM25 in our example) on the SCIFACT validation dataset in Figure. As the new query for each original query, we expand the original query with the terms from the ground truth document. The MAP and NDCG@10 increase slightly as we add new terms to the original query because the added term enriches the original query. The sparse retrieval BM25 then outperforms the dense retrieval. This phenomenon demonstrates that, in the presence of a high-quality query, sparse retrieval can have the potential to outperform the dense retrieval.
+
+![](image/query_expansion_analysis.png)
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/github_username/repo_name.svg?style=for-the-badge
+[contributors-url]: https://github.com/github_username/repo_name/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/github_username/repo_name.svg?style=for-the-badge
+[forks-url]: https://github.com/github_username/repo_name/network/members
+[stars-shield]: https://img.shields.io/github/stars/github_username/repo_name.svg?style=for-the-badge
+[stars-url]: https://github.com/github_username/repo_name/stargazers
+[issues-shield]: https://img.shields.io/github/issues/github_username/repo_name.svg?style=for-the-badge
+[issues-url]: https://github.com/github_username/repo_name/issues
+[license-shield]: https://img.shields.io/github/license/github_username/repo_name.svg?style=for-the-badge
+[license-url]: https://github.com/github_username/repo_name/blob/master/LICENSE.txt
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://linkedin.com/in/linkedin_username
+[product-screenshot]: images/screenshot.png
+[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
+[Next-url]: https://nextjs.org/
+[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://reactjs.org/
+[Vue.js]: https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D
+[Vue-url]: https://vuejs.org/
+[Angular.io]: https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white
+[Angular-url]: https://angular.io/
+[Svelte.dev]: https://img.shields.io/badge/Svelte-4A4A55?style=for-the-badge&logo=svelte&logoColor=FF3E00
+[Svelte-url]: https://svelte.dev/
+[Laravel.com]: https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white
+[Laravel-url]: https://laravel.com
+[Bootstrap.com]: https://img.shields.io/badge/Bootstrap-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white
+[Bootstrap-url]: https://getbootstrap.com
+[JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
+[JQuery-url]: https://jquery.com 

@@ -1,0 +1,12 @@
+dataset: nq
+train_path: dataset/natural-questions/train.source
+test_path: dataset/natural-questions/test.source
+reward: recall_100
+# model_name: /projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/nq_sentence_results/checkpoint-61900
+model_name: /projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/nq_title_results/checkpoint-53200
+# model_name: /projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/nq_answer_results/checkpoint-123700
+model_save_path: nq_sentence_results_recall_100
+txt_in_min_len: 2
+txt_in_max_len: 8
+txt_out_min_len: 4
+txt_out_max_len: 16
