@@ -104,7 +104,7 @@ Reinforcement Learning. We use the library Transformer Reinforcement Learning (t
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Query Analysis in the SCIFACT dataset:
+## Query Analysis in the SCIFACT dataset:
 
 We show how the query influenced the performance of sparse retrieval (BM25 in our example) on the SCIFACT validation dataset in Figure. As the new query for each original query, we expand the original query with the terms from the ground truth document. The MAP and NDCG@10 increase slightly as we add new terms to the original query because the added term enriches the original query. The sparse retrieval BM25 then outperforms the dense retrieval. This phenomenon demonstrates that, in the presence of a high-quality query, sparse retrieval can have the potential to outperform the dense retrieval.
 
