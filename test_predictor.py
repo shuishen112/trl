@@ -4,11 +4,11 @@ from tqdm import tqdm
 from transformers import GPT2Tokenizer
 import yaml
 
-yaml_args = yaml.load(open("yaml_config/nq_config.yaml"), Loader=yaml.FullLoader)
+yaml_args = yaml.load(open("yaml_config/msmarco_config.yaml"), Loader=yaml.FullLoader)
 
 model_save_path = yaml_args["model_save_path"]
 tokenizer = GPT2Tokenizer.from_pretrained(
-    "/projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/models/tokenizer"
+    "gpt_tokenizer/tokenizer"
 )
 
 tokenizer.pad_token = tokenizer.eos_token

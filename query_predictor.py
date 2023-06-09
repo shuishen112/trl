@@ -11,7 +11,7 @@ from pyterrier.measures import *
 pt.init()
 # idf = pickle.load(open("notebook/idf.pickle", "rb"))
 # word_count = pickle.load(open("notebook/word_count.pickle", "rb"))
-yaml_args = yaml.load(open("yaml_config/nq_config.yaml"), Loader=yaml.FullLoader)
+# yaml_args = yaml.load(open("yaml_config/scifact_config.yaml"), Loader=yaml.FullLoader)
 
 scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
 
@@ -99,6 +99,28 @@ def get_retrieval_material_scifact():
 
     return bm25, train_qrel, train_qrel
 
+def get_retrieval_material_msmarco():
+    index = pt.IndexFactory.of(
+        "./indices/beir_msmarco"
+    )
+    print(index.getCollectionStatistics().toString())   
+    bm25 = pt.BatchRetrieve(index, wmodel="BM25").parallel(16)
+    dataset = pt.datasets.get_dataset("trec-deep-learning-passages") 
+    train_qrel = dataset.get_qrels("train")
+    dev_qrel = dataset.get_qrels("dev.small")
+
+    result = pt.Experiment(
+        [bm25],
+        dataset.get_topics("dev.small")[:10],
+        dataset.get_qrels("dev.small"),
+        ["recall_50"],
+        verbose=True,
+    )
+    print(result)
+    return bm25, train_qrel, dev_qrel
+
+    
+
 
 def get_retrieval_material_nq():
     #
@@ -131,14 +153,16 @@ def get_retrieval_material_nq():
 
 
 class QueryReward:
-    def __init__(self, reward_name, reward_type="pre-retrieval"):
+    def __init__(self, reward_name, reward_type="pre-retrieval", dataset="scifact"):
         self.reward_name = reward_name
         self.reward_type = reward_type
         # if self.reward_type == "post-retrieval":
-        if yaml_args["dataset"] == "nq":
+        if dataset == "nq":
             self.bm25, self.train_qrel, self.val_qrel = get_retrieval_material_nq()
-        elif yaml_args["dataset"] == "scifact":
+        elif dataset == "scifact":
             self.bm25, self.train_qrel, self.val_qrel = get_retrieval_material_scifact()
+        elif dataset == "msmarco":
+            self.bm25, self.train_qrel, self.val_qrel = get_retrieval_material_msmarco()
         else:
             print("no dataset")
 

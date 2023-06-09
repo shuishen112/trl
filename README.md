@@ -102,6 +102,15 @@ Reinforcement Learning. We use the library Transformer Reinforcement Learning (t
 
 > python QueryReformulation.py
 
+## Evaluation
+
+- generate the new query
+> python test_predictor.py
+
+Evaluate the performance in another repo: RLSequence2Sequence. 
+
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Query Analysis in the SCIFACT dataset:

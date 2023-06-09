@@ -1,4 +1,3 @@
-# %%
 import numpy as np
 import torch
 
@@ -21,8 +20,8 @@ from transformers.utils import logging
 logging.set_verbosity_info()
 import yaml
 
-yaml_args = yaml.load(open("yaml_config/nq_config.yaml"), Loader=yaml.FullLoader)
-qw = QueryReward(yaml_args["reward"], reward_type="post-retrieval")
+yaml_args = yaml.load(open("yaml_config/msmarco_config.yaml"), Loader=yaml.FullLoader)
+qw = QueryReward(yaml_args["reward"], reward_type="post-retrieval",dataset="msmarco")
 
 
 class LengthSampler:
@@ -79,8 +78,8 @@ class S2Sdataset(Dataset):
 
         df_query = pd.read_csv(
             yaml_args["train_path"],
-            # sep="\t",
-            # names=["qid", "query"],
+            sep="\t",
+            names=["qid", "query"],
         )
         # print(df_query)
         self.df_train = df_query["query"]
@@ -173,8 +172,8 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
 
     #### Compute reward score
     # t = time.time()
-    texts = [q + " " + r for q, r in zip(batch["query"], batch["response"])]
-
+    texts = [" ".join([q] * 5) + " " + r for q, r in zip(batch["query"], batch["response"])]
+    print(texts)
     feedback_score = qw.get_reward_score(
         texts,
         None,
@@ -234,7 +233,7 @@ for epoch, batch in tqdm(enumerate(ppo_trainer.dataloader)):
     # wandb.log(logs)
     reward_now = np.mean(np.array(reward_all))
     print(reward_now)
-    if reward_now > max_reward:
+    if reward_now >= max_reward:
         max_reward = reward_now
         print(reward_now)
         gpt2_model.save_pretrained(yaml_args["model_save_path"])

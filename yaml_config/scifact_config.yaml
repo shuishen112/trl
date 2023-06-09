@@ -1,7 +1,7 @@
 dataset: scifact
 train_path: /projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/scifact/train.source_rl
 reward: map
-model_name: /projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/scifact_results_best/checkpoint-1068
+model_name: /projects/futhark1/data/wzm289/code/RLSeq2SeqPytorch/scifact_gpt_results/save_model
 model_save_path: scifact_results_map
 txt_in_min_len: 2
 txt_in_max_len: 8
