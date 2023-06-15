@@ -58,8 +58,7 @@
 ## About The Project
 
 
-This is a pytorch implementation of the paper: QRGPT: A Query Reformulation Approach using GPT with
-Reinforcement Learning. We use the library Transformer Reinforcement Learning (trl) from https://github.com/lvwerra/trl.git. 
+This is a pytorch implementation of the paper: Reinforced Queries using Pre-trained Language Model in Sparse Retrieval. We use the library Transformer Reinforcement Learning (trl) from https://github.com/lvwerra/trl.git. 
 
 
 
